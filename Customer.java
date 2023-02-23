@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 
 public class Customer {
+    public static String dat;
     private String firstName;
     private String lastName;
     private ArrayList<Account> acct;

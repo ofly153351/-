@@ -2,6 +2,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 public class TellerGUISwing implements ActionListener {
     private JButton bn1, bn2, bn3;
@@ -12,6 +13,7 @@ public class TellerGUISwing implements ActionListener {
     private JFrame fr;
     private Customer cust;
     private JComboBox<String> c1;
+    private File file;
 
     /**
      * 
@@ -110,6 +112,28 @@ public class TellerGUISwing implements ActionListener {
             tf4.setText("0");
         }
 
+        if (cust.getNumOfAccount() == 0) {
+            Account acc = new Account(4000);
+            cust.addAccount(acc);
+        }
+        try {
+            int x = 0;
+            do {
+                file = new File("Customer_" + i + ".dat");
+                if (file.exists()) {
+                    double[] initAmount = CustomerStorage.getBalance(x);
+                    if (cust.getAccount(x) instanceof CheckingAccount) {
+                        ((CheckingAccount) cust.getAccount(x)).updateBalance(initAmount[0]);
+                    } else if (cust.getAccount(x) instanceof Account || cust.getAccount(x) instanceof SavingAccount) {
+                        cust.getAccount(x).updateBalance(initAmount[x]);
+                    }
+                }
+                x++;
+            } while (x < cust.getNumOfAccount());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         c1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
                 int id = c1.getSelectedIndex();
@@ -161,13 +185,17 @@ public class TellerGUISwing implements ActionListener {
     public void actionPerformed(ActionEvent ed) {
         String cmd = ed.getActionCommand();
         double amt = Double.parseDouble(tf3.getText());
-        double cre = Double.parseDouble(tf4.getText());
+        // double cre = Double.parseDouble(tf4.getText());
         try {
-            double pp = ((CheckingAccount) cust.getAccount(c1.getSelectedIndex())).getBalance();
             if (cmd == "Exit") {
-
-                System.exit(0);
-
+                for (int i = 0; i < cust.getNumOfAccount() || i < 1; i++) {
+                    if ((cust.getAccount(i) instanceof CheckingAccount)) {
+                        CustomerStorage.saveBalance(i, cust.getAccount(i).getBalance());
+                    } else if (cust.getAccount(i) instanceof Account || cust.getAccount(i) instanceof SavingAccount) {
+                        CustomerStorage.saveBalance(i, cust.getAccount(i).getBalance());
+                    }
+                    System.exit(0);
+                }
             } else if (cmd == "Withdraw") {
 
                 cust.getAccount(c1.getSelectedIndex()).withdraw(amt);
@@ -178,11 +206,6 @@ public class TellerGUISwing implements ActionListener {
                     tf2.setText(cust.getAccount(c1.getSelectedIndex()).getBalance() + "");
                     tf4.setText(((CheckingAccount) cust.getAccount(c1.getSelectedIndex())).getCredit() + "");
                     err.setText(null);
-
-                    if (((CheckingAccount) cust.getAccount(c1.getSelectedIndex())).getBalance() < 0) {
-                        cre = (pp + cre) - amt; /// ตัวนี้ยังมั่ว //else if else if getbalance + cre < amt
-                        tf4.setText(cre + "");
-                    }
                 }
                 err.setText(null);
             } else if (cmd == "Deposit") {
@@ -193,7 +216,9 @@ public class TellerGUISwing implements ActionListener {
 
             }
 
-        } catch (WithdrawException ex) {
+        } catch (
+
+        WithdrawException ex) {
             err.setText("Not Enough Money");
             JOptionPane.showMessageDialog(null, "Not Enough Money " + cust.getFirstName() + " " + cust.getLastName(),
                     "olo",

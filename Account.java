@@ -30,4 +30,8 @@ public class Account {
     public double getBalance() {
         return balance;
     }
+
+    public void updateBalance(double b) {
+        balance = b;
+    }
 }
